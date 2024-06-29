@@ -1,7 +1,9 @@
 import {Random, Tile, TileMap, Vector} from "excalibur";
+import {Coordinate} from "../../../Utility/Type/Dimensional.ts";
+import {AutoTileMap} from "./AutoTileMap.ts";
 
 export class TileGrid<Identifier extends string = string> {
-    private readonly tileMaps = new Map<Identifier, TileMap>();
+    private readonly tileMaps = new Map<Identifier, AutoTileMap>();
 
     private random = new Random();
 
@@ -18,7 +20,7 @@ export class TileGrid<Identifier extends string = string> {
             return;
         }
 
-        const tileMap = new TileMap({
+        const tileMap = new AutoTileMap({
             name: identifier,
             pos: Vector.Zero,
             rows: this.height,
@@ -95,6 +97,10 @@ export class TileGrid<Identifier extends string = string> {
 
     getTile(identifier: Identifier, gridPos: Vector): Tile | undefined {
         return this.tileMaps.get(identifier)?.getTile(gridPos.x, gridPos.y) ?? undefined;
+    }
+
+    getTileMask(identifier: Identifier, {x, y}: Coordinate): number {
+        return this.tileMaps.get(identifier)?.getMask(x, y) ?? 0;
     }
 
     getTileByPoint(identifier: Identifier, point: Vector): Tile | undefined {
