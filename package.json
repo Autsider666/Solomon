@@ -1,0 +1,24 @@
+{
+  "name": "roguelike",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "eslint": "eslint './src/**/*.ts' --fix",
+    "tsc": "tsc --noemit",
+    "lint": "npm run eslint && npm run tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2",
+    "vite": "^5.3.1"
+  },
+  "dependencies": {
+    "@eslint/js": "^9.6.0",
+    "eslint": "^8.57.0",
+    "excalibur": "^0.30.0-alpha.1077",
+    "typescript-eslint": "^7.14.1"
+  }
+}
