@@ -59,21 +59,12 @@ export class TileGrid<Identifier extends string = string> {
         throw new Error('Hmmm, more tries?');
     }
 
-    getTileByCoordinate(x: number, y: number): Vector { //TODO what does this do?
-        if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
-            throw new Error('Invalid gridPos');
-        }
+    isFreeCoordinate(x: number, y: number, excludedLayers: Array<Identifier> = []): boolean {
+        return this.iterateTileMaps<boolean>((tileMap, identifier) => {
+            if (excludedLayers.includes(identifier)) {
+                return;
+            }
 
-        const tile = this.iterateTileMaps<Vector>(tileMap => tileMap.getTile(x, y).pos);
-        if (tile === undefined) {
-            throw new Error('Whoeps');
-        }
-
-        return tile;
-    }
-
-    isFreeCoordinate(x: number, y: number): boolean {
-        return this.iterateTileMaps<boolean>(tileMap => {
             const tile = tileMap.getTile(x, y);
             if (tile.solid) {
                 return false;
@@ -81,8 +72,8 @@ export class TileGrid<Identifier extends string = string> {
         }) ?? true;
     }
 
-    isFreeTile(pos: Vector): boolean {
-        return this.isFreeCoordinate(pos.x, pos.y);
+    isFreeTile(pos: Coordinate, excludedLayers: Array<Identifier> = []): boolean {
+        return this.isFreeCoordinate(pos.x, pos.y, excludedLayers);
     }
 
     /** Callback stops early when returning a value **/
@@ -95,7 +86,7 @@ export class TileGrid<Identifier extends string = string> {
         }
     }
 
-    getTile(identifier: Identifier, gridPos: Vector): Tile | undefined {
+    getTile(identifier: Identifier, gridPos: Coordinate): Tile | undefined {
         return this.tileMaps.get(identifier)?.getTile(gridPos.x, gridPos.y) ?? undefined;
     }
 

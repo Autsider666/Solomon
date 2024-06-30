@@ -6,7 +6,7 @@ const height = 25;
 const width = 25;
 
 const engine = new Engine({
-    maxFps: 25,
+    maxFps: 60,
     backgroundColor: Color.Black,
 });
 

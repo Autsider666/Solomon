@@ -1,0 +1,1 @@
+export type GridLayer = 'background' | 'creatures' | 'light';

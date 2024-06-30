@@ -1,20 +1,14 @@
-import {
-    Actor,
-    Color,
-    DefaultLoader,
-    Engine,
-    Graphic,
-    Keys,
-    Random,
-    Raster,
-    Rectangle,
-    Scene,
-    Vector
-} from "excalibur";
-import Easing from "../../Utility/Math/Easing.ts";
+import {Color, DefaultLoader, Entity, Graphic, Random, Rectangle, Scene, Vector} from "excalibur";
+import {Player} from "../Actor/Player.ts";
 import {AssetLoader} from "../Asset/AssetLoader.ts";
 import {FloorAssetLoader} from "../Asset/DawnLike/FloorAssetLoader.ts";
 import {WallAssetLoader} from "../Asset/DawnLike/WallAssetLoader.ts";
+import {TileComponent} from "../ECS/Component/TileComponent.ts";
+import {FieldOfViewSystem} from "../ECS/System/FieldOfViewSystem.ts";
+import {LightingSystem} from "../ECS/System/LightingSystem.ts";
+import {MovementSystem} from "../ECS/System/MovementSystem.ts";
+import {PlayerInputSystem} from "../ECS/System/PlayerInputSystem.ts";
+import {GridLayer} from "../types.ts";
 import {TileGrid} from "../Utilirty/Tile/TileGrid.ts";
 
 type DungeonSceneProps = {
@@ -30,15 +24,11 @@ export class DungeonScene extends Scene {
 
     private readonly random: Random = new Random();
 
-    private readonly grid: TileGrid<'background' | 'creatures' | 'light'>;
+    private readonly grid: TileGrid<GridLayer>;
     private readonly height: number;
     private readonly width: number;
 
-    private readonly playerPos: Vector = new Vector(1, 1);
-    private readonly player: Actor;
-    private direction: 'up' | 'down' | 'left' | 'right' | undefined;
-
-    private readonly lightMaxDistance: number = 10;
+    private readonly player: Player;
 
     constructor({height, width}: DungeonSceneProps) {
         super();
@@ -46,19 +36,14 @@ export class DungeonScene extends Scene {
         this.height = height;
         this.width = width;
 
-        this.grid = new TileGrid<'background' | 'creatures' | 'light'>(
+        this.grid = new TileGrid<GridLayer>(
             this,
             this.tileSize,
             height,
             width,
         );
 
-        this.player = new Actor({
-            width: this.tileSize,
-            height: this.tileSize,
-            color: Color.Red,
-            anchor: Vector.Zero,
-        });
+        this.player = new Player(this.tileSize);
 
         this.add(this.player);
 
@@ -74,7 +59,12 @@ export class DungeonScene extends Scene {
         this.floors.load(loader);
     }
 
-    onInitialize(engine: Engine) {
+    onInitialize() {
+        this.world.add(new MovementSystem(this.world, this.tileSize, this.grid));
+        this.world.add(new LightingSystem(this.world, this.grid));
+        this.world.add(new FieldOfViewSystem(this.world, this.grid));
+        this.world.add(new PlayerInputSystem(this.world));
+
         this.grid.createLayer('background', -10, tile => {
             if (tile.x === 0 || tile.x === this.width - 1 || tile.y == 0 || tile.y === this.height - 1) {
                 tile.solid = true;
@@ -114,11 +104,6 @@ export class DungeonScene extends Scene {
             tile.addGraphic(sprite);
         });
 
-        engine.inputMapper.on(({keyboard}) => keyboard.isHeld(Keys.W), () => this.direction = 'up');
-        engine.inputMapper.on(({keyboard}) => keyboard.isHeld(Keys.S), () => this.direction = 'down');
-        engine.inputMapper.on(({keyboard}) => keyboard.isHeld(Keys.A), () => this.direction = 'left');
-        engine.inputMapper.on(({keyboard}) => keyboard.isHeld(Keys.D), () => this.direction = 'right');
-
         this.grid.createLayer('light', 10, tile => {
             const graphic = new Rectangle({
                 height: this.tileSize,
@@ -127,6 +112,10 @@ export class DungeonScene extends Scene {
             });
             graphic.color.a = 0;
             tile.addGraphic(graphic);
+
+            this.world.add(new Entity([
+                new TileComponent(tile)
+            ]));
         });
 
         this.grid.createLayer('creatures', 0, tile => {
@@ -143,82 +132,7 @@ export class DungeonScene extends Scene {
             });
             tile.addGraphic(graphic);
         });
-    }
 
-    onActivate() {
-        this.updateLight();
-    }
-
-    onPreUpdate() {
-        if (this.updatePlayer()) {
-            this.updateLight();
-        }
-    }
-
-    private updatePlayer(): boolean {
-        if (!this.direction) {
-            return false;
-        }
-
-        // const currentTile = this.grid.getTile('creatures', this.playerPos);
-        // if (!currentTile) {
-        //     throw new Error('no tile?');
-        // }
-
-        switch (this.direction) {
-            case "up":
-                if (this.playerPos.y > 0) {
-                    this.playerPos.y--;
-                } else {
-                    return false;
-                }
-                break;
-            case "down":
-                if (this.playerPos.y + 1 < this.height) {
-                    this.playerPos.y++;
-                } else {
-                    return false;
-                }
-                break;
-            case "left":
-                if (this.playerPos.x > 0) {
-                    this.playerPos.x--;
-                } else {
-                    return false;
-                }
-                break;
-            case "right":
-                if (this.playerPos.x + 1 < this.width) {
-                    this.playerPos.x++;
-                } else {
-                    return false;
-                }
-                break;
-        }
-
-        const newTile = this.grid.getTile('creatures', this.playerPos);
-        if (!newTile) {
-            throw new Error('no tile?');
-        }
-
-        // currentTile.getGraphics().forEach(graphic => newTile.addGraphic(graphic));
-        // currentTile.clearGraphics();
-
-        this.player.pos.x = this.playerPos.x * this.tileSize;
-        this.player.pos.y = this.playerPos.y * this.tileSize;
-
-        this.direction = undefined;
-
-        return true;
-    }
-
-    private updateLight(): void {
-        this.grid.iterateLayer('light', tile => {
-            const graphic = tile.getGraphics()[0];
-            if (graphic instanceof Raster) {
-                const distance = this.playerPos.distance(new Vector(tile.x, tile.y));
-                graphic.color.a = distance > this.lightMaxDistance ? 1 : Easing.easeInOutSine(distance / this.lightMaxDistance);
-            }
-        });
+        this.player.setTilePos(this.grid.getRandomFreeTile());
     }
 }

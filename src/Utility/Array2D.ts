@@ -1,12 +1,12 @@
 import type {Coordinate, Dimensions} from "./Type/Dimensional.ts";
 
-export type DefaultValueGenerator<I> = (index: number) => I;
+export type DefaultValueGenerator<I, C extends Coordinate = Coordinate> = (index: number, coordinate: C) => I;
 
 export class Array2D<I, C extends Coordinate = Coordinate> {
-    protected store: I[];
+    protected store!: I[];
     protected readonly iterateSet = new Set<I>();
     protected readonly changedIndexes = new Set<number>();
-    protected readonly defaultValue: DefaultValueGenerator<I>;
+    protected readonly defaultValue: DefaultValueGenerator<I, C>;
 
     protected readonly arrayWidth: number;
     protected readonly arrayHeight: number;
@@ -15,38 +15,40 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
     constructor(
         {width, height}: Dimensions,
         defaultValue: DefaultValueGenerator<I>,
-        protected readonly offset: C = {x:0,y:0} as C,
+        protected readonly offset: C = {x: 0, y: 0} as C,
         existingStore?: I[],
     ) {
         this.arrayWidth = width;
         this.arrayHeight = height;
         this.length = width * height;
 
-        this.defaultValue = index => {
-            const item = defaultValue(index);
+        this.defaultValue = (index, coordinate) => {
+            const item = defaultValue(index, coordinate);
             // this.changedIndexes.add(index);//TODO not needed, right? Because Air is already rendered even if non-existent
             this.iterateSet.add(item);
             return item;
         };
 
-        this.store = existingStore ?? [...Array<I>(this.length)].map((_, index) => this.defaultValue(index));
+        this.clear(existingStore);
     }
 
-    // public clear(): void {
-    //     this.changedIndexes.clear();
-    //     this.iterateSet.clear();
-    //     this.store = [...Array<I>(this.length)].map((_, index) => this.defaultValue(index));
-    // }
+    public clear(existingStore?: I[]): void {
+        this.changedIndexes.clear();
+        this.iterateSet.clear();
+        this.store = existingStore ?? [...Array<I>(this.length)].map((_, index) => this.defaultValue(index, this.toCoordinate(index)));
+    }
 
     public get<P extends I = I>(coordinate: C): P {
         this.validateCoordinate(coordinate);
 
-        const item = this.store[this.toIndex(coordinate)];
-        if (!item) {
-            throw new Error('No particle found at coordinate');
-        }
+        return this.store[this.toIndex(coordinate)] as P;
 
-        return item as P;
+        // const item = this.store[this.toIndex(coordinate)];
+        // if (item === undefined) {
+        //     throw new Error('No item found at coordinate: ' + JSON.stringify({x: coordinate.x, y: coordinate.y}));
+        // }
+        //
+        // return item as P;
     }
 
     protected getByIndex(index: number): I {
