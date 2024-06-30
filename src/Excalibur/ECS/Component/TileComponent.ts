@@ -5,7 +5,7 @@ export class TileComponent extends BaseComponent {
     public readonly pos: Vector;
     private readonly graphic: Raster;
 
-    public visible:boolean = true;
+    public visible: boolean = true;
 
     constructor(
         public readonly tile: Tile,

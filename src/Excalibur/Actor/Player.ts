@@ -21,7 +21,7 @@ export class Player extends BaseActor {
         this.addComponent(new MovableComponent(100));
     }
 
-    public setTilePos({x,y}:Coordinate):void {
+    public setTilePos({x, y}: Coordinate): void {
         this.pos.x = x * this.tileSize;
         this.pos.y = y * this.tileSize;
     }

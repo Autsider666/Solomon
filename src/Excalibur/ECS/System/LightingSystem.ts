@@ -1,7 +1,9 @@
 import {
     BodyComponent,
+    Color,
     Entity,
     Query,
+    Rectangle,
     System,
     SystemPriority,
     SystemType,
@@ -44,21 +46,21 @@ export class LightingSystem extends System {
         });
     }
 
-    // initialize(world: World) {
-    //     this.grid.createLayer('light', 10, tile => {
-    //         const graphic = new Rectangle({
-    //             height: this.grid.tileSize,
-    //             width: this.grid.tileSize,
-    //             color: Color.fromRGB(0, 0, 0),
-    //         });
-    //         graphic.color.a = 0;
-    //         tile.addGraphic(graphic);
-    //
-    //         world.add(new Entity([
-    //             new TileComponent(tile)
-    //         ]));
-    //     });
-    // }
+    initialize(world: World) {
+        this.grid.createLayer('light', 10, tile => {
+            const graphic = new Rectangle({
+                height: this.grid.tileSize,
+                width: this.grid.tileSize,
+                color: Color.fromRGB(0, 0, 0),
+            });
+            graphic.color.a = 0;
+            tile.addGraphic(graphic);
+
+            world.add(new Entity([
+                new TileComponent(tile)
+            ]));
+        });
+    }
 
     update(): void {
         this.lightMap.clear();

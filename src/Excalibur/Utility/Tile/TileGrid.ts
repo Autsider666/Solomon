@@ -99,7 +99,7 @@ export class TileGrid<Identifier extends string = string> {
     }
 
     getGridCoordinateByPoint(point: Vector): Vector {
-        const vector =  this.iterateTileMaps<Vector>(tilemap => {
+        const vector = this.iterateTileMaps<Vector>(tilemap => {
             const tile = tilemap.getTileByPoint(point);
             if (tile) {
                 return new Vector(tile.x, tile.y);

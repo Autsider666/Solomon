@@ -1,9 +1,8 @@
-import {Color, DefaultLoader, Entity, Graphic, Random, Rectangle, Scene, Vector} from "excalibur";
+import {DefaultLoader, Graphic, Random, Scene, Vector} from "excalibur";
 import {Player} from "../Actor/Player.ts";
 import {AssetLoader} from "../Asset/AssetLoader.ts";
 import {FloorAssetLoader} from "../Asset/DawnLike/FloorAssetLoader.ts";
 import {WallAssetLoader} from "../Asset/DawnLike/WallAssetLoader.ts";
-import {TileComponent} from "../ECS/Component/TileComponent.ts";
 import {FieldOfViewSystem} from "../ECS/System/FieldOfViewSystem.ts";
 import {LightingSystem} from "../ECS/System/LightingSystem.ts";
 import {MovementSystem} from "../ECS/System/MovementSystem.ts";
@@ -61,9 +60,9 @@ export class DungeonScene extends Scene {
 
     onInitialize() {
         this.world.add(new MovementSystem(this.world, this.tileSize, this.grid));
-        this.world.add(new LightingSystem(this.world, this.grid));
         this.world.add(new FieldOfViewSystem(this.world, this.grid));
         this.world.add(new PlayerInputSystem(this.world));
+        this.world.add(new LightingSystem(this.world, this.grid));
 
         this.grid.createLayer('background', -10, tile => {
             if (tile.x === 0 || tile.x === this.width - 1 || tile.y == 0 || tile.y === this.height - 1) {
@@ -102,20 +101,6 @@ export class DungeonScene extends Scene {
             }
 
             tile.addGraphic(sprite);
-        });
-
-        this.grid.createLayer('light', 10, tile => {
-            const graphic = new Rectangle({
-                height: this.grid.tileSize,
-                width: this.grid.tileSize,
-                color: Color.fromRGB(0, 0, 0),
-            });
-            graphic.color.a = 0;
-            tile.addGraphic(graphic);
-
-            this.world.add(new Entity([
-                new TileComponent(tile)
-            ]));
         });
 
         // this.grid.createLayer('creatures', 0, tile => {
