@@ -2,7 +2,7 @@ import {BodyComponent, Query, System, SystemPriority, SystemType, World} from "e
 import {Traversal} from "../../../Utility/Traversal.ts";
 import {Coordinate} from "../../../Utility/Type/Dimensional.ts";
 import {GridLayer} from "../../types.ts";
-import {TileGrid} from "../../Utilirty/Tile/TileGrid.ts";
+import {TileGrid} from "../../Utility/Tile/TileGrid.ts";
 import {MovableComponent} from "../Component/MovableComponent.ts";
 import {MovedTag} from "../tags.ts";
 
@@ -34,12 +34,9 @@ export class MovementSystem extends System {
 
             movableComponent.move = undefined;
             const pos = entity.get(BodyComponent).pos;
-            const currentTile = this.grid.getTileByPoint('light', pos);
-            if (!currentTile) {
-                continue;
-            }
+            const gridPos = this.grid.getGridCoordinateByPoint(pos);
 
-            const nextTilePos = Traversal.getDestinationCoordinate<Coordinate>(currentTile, move);
+            const nextTilePos = Traversal.getDestinationCoordinate<Coordinate>(gridPos, move);
             if (!this.grid.isFreeTile(nextTilePos)) {
                 continue;
             }

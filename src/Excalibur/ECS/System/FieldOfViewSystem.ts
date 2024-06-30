@@ -1,9 +1,8 @@
-import {BodyComponent, Entity, Query, System, SystemPriority, SystemType, World} from "excalibur";
+import {BodyComponent, Entity, Query, System, SystemPriority, SystemType, Vector, World} from "excalibur";
 import {Array2D} from "../../../Utility/Array2D.ts";
-import {Traversal} from "../../../Utility/Traversal.ts";
-import {Coordinate} from "../../../Utility/Type/Dimensional.ts";
+import {SymmetricShadowCasting} from "../../../Utility/FieldOfView/SymmetricShadowCasting/SymmetricShadowCasting.ts";
 import {GridLayer} from "../../types.ts";
-import {TileGrid} from "../../Utilirty/Tile/TileGrid.ts";
+import {TileGrid} from "../../Utility/Tile/TileGrid.ts";
 import {FieldOfViewComponent} from "../Component/FieldOfViewComponent.ts";
 import {TileComponent} from "../Component/TileComponent.ts";
 
@@ -48,27 +47,17 @@ export class FieldOfViewSystem extends System {
 
         for (const entity of this.fieldOfViewQuery.entities) {
             const pos = entity.get(BodyComponent).pos;
-            const currentTile = this.grid.getTileByPoint('light', pos);
-            if (!currentTile) {
-                throw new Error('que?');
-            }
-
-            const fovComponent = entity.get(FieldOfViewComponent);
-            for (const gridPos of fovComponent.potentialTiles) {
-                Traversal.iterateBetweenTwoCoordinates<Coordinate>(currentTile, {
-                    x: gridPos.x + currentTile.x,
-                    y: gridPos.y + currentTile.y,
-                }, coordinate => {
-                    let visible: boolean | undefined = this.fovCache.get(coordinate);
-                    if (visible === undefined) {
-                        visible = this.grid.isFreeTile(coordinate);
-
-                        this.fovCache.set(coordinate, visible);
-                    }
-
-                    return visible;
+            const startingCoordinate = this.grid.getGridCoordinateByPoint(pos);
+            const checkCoordinate = new Vector(0, 0);
+            SymmetricShadowCasting.computeFieldOfView(
+                startingCoordinate,
+                coordinate => {
+                    checkCoordinate.setTo(coordinate.x, coordinate.y);
+                    return startingCoordinate.distance(checkCoordinate) > 10 || !this.grid.isFreeTile(coordinate);
+                },
+                coordinate => {
+                    this.fovCache.set(coordinate, true);
                 });
-            }
         }
 
         this.tileMap.iterateItems((entity, coordinate) => {

@@ -1,6 +1,6 @@
 import {DefaultLoader, ImageSource, Sprite, SpriteSheet, SpriteSheetGridOptions, Vector} from "excalibur";
 import {Coordinate} from "../../Utility/Type/Dimensional.ts";
-import {TileMaskHandler, TileMaskMap} from "../Utilirty/Tile/TileMaskHandler.ts";
+import {TileMaskHandler, TileMaskMap} from "../Utility/Tile/TileMaskHandler.ts";
 
 type AssetLoaderProps = {
     imagePath: string,

@@ -21,18 +21,4 @@ export class LightSourceComponent extends BaseComponent {
             }
         }
     }
-
-    // onAdd(owner: BaseActor) {
-    //     owner.on<'lighting'>('lighting', ({grid}) => {
-    //         const currentTile = grid.getTileByPoint('light',owner.pos);
-    //         if (this.lastUpdatedPos.x === currentTile.x && this.lastUpdatedPos.y === currentTile.y) {
-    //             return;
-    //         }
-    //
-    //         for (const [gridPos, strength] of this.potentialTiles) {
-    //             grid.getTile('light',gridPos)
-    //         }
-    //         this.lastUpdatedPos.setTo(currentTile.x, currentTile.y);
-    //     });
-    // }
 }

@@ -66,7 +66,7 @@ export class TileGrid<Identifier extends string = string> {
             }
 
             const tile = tileMap.getTile(x, y);
-            if (tile.solid) {
+            if (!tile || tile.solid) {
                 return false;
             }
         }) ?? true;
@@ -96,5 +96,20 @@ export class TileGrid<Identifier extends string = string> {
 
     getTileByPoint(identifier: Identifier, point: Vector): Tile | undefined {
         return this.tileMaps.get(identifier)?.getTileByPoint(point) ?? undefined;
+    }
+
+    getGridCoordinateByPoint(point: Vector): Vector {
+        const vector =  this.iterateTileMaps<Vector>(tilemap => {
+            const tile = tilemap.getTileByPoint(point);
+            if (tile) {
+                return new Vector(tile.x, tile.y);
+            }
+        });
+
+        if (!vector) {
+            throw new Error('Failed to find grid coordinate for point.');
+        }
+
+        return vector;
     }
 }

@@ -1,7 +1,16 @@
-import {BodyComponent, Entity, Query, System, SystemPriority, SystemType, Vector, World} from "excalibur";
+import {
+    BodyComponent,
+    Entity,
+    Query,
+    System,
+    SystemPriority,
+    SystemType,
+    Vector,
+    World
+} from "excalibur";
 import {Array2D} from "../../../Utility/Array2D.ts";
 import {GridLayer} from "../../types.ts";
-import {TileGrid} from "../../Utilirty/Tile/TileGrid.ts";
+import {TileGrid} from "../../Utility/Tile/TileGrid.ts";
 import {LightSourceComponent} from "../Component/LightSourceComponent.ts";
 import {TileComponent} from "../Component/TileComponent.ts";
 
@@ -35,22 +44,23 @@ export class LightingSystem extends System {
         });
     }
 
-    update(): void {
-        // let dirty = false;
-        // for (const entity of this.lightSourceQuery.entities) {
-        //     const body = entity.get(BodyComponent);
-        //     console.log(entity,body.pos, body.oldPos);
-        //     if (body.pos.distance(body.oldPos) === 0) {
-        //         continue;
-        //     }
-        //
-        //     dirty = true;
-        // }
-        //
-        // if (!dirty) {
-        //     return;
-        // }
+    // initialize(world: World) {
+    //     this.grid.createLayer('light', 10, tile => {
+    //         const graphic = new Rectangle({
+    //             height: this.grid.tileSize,
+    //             width: this.grid.tileSize,
+    //             color: Color.fromRGB(0, 0, 0),
+    //         });
+    //         graphic.color.a = 0;
+    //         tile.addGraphic(graphic);
+    //
+    //         world.add(new Entity([
+    //             new TileComponent(tile)
+    //         ]));
+    //     });
+    // }
 
+    update(): void {
         this.lightMap.clear();
 
         for (const entity of this.lightSourceQuery.entities) {

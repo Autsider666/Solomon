@@ -2,7 +2,7 @@ import {Actor, EventEmitter, EventKey, Handler, Subscription} from "excalibur";
 // @ts-expect-error PR to fix this is submitted
 import {ActorEvents} from "excalibur/build/dist/Actor";
 import {GridLayer} from "../types.ts";
-import {TileGrid} from "../Utilirty/Tile/TileGrid.ts";
+import {TileGrid} from "../Utility/Tile/TileGrid.ts";
 
 type Events = {
     lighting: {

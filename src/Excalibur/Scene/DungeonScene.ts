@@ -9,7 +9,7 @@ import {LightingSystem} from "../ECS/System/LightingSystem.ts";
 import {MovementSystem} from "../ECS/System/MovementSystem.ts";
 import {PlayerInputSystem} from "../ECS/System/PlayerInputSystem.ts";
 import {GridLayer} from "../types.ts";
-import {TileGrid} from "../Utilirty/Tile/TileGrid.ts";
+import {TileGrid} from "../Utility/Tile/TileGrid.ts";
 
 type DungeonSceneProps = {
     height: number,
@@ -106,8 +106,8 @@ export class DungeonScene extends Scene {
 
         this.grid.createLayer('light', 10, tile => {
             const graphic = new Rectangle({
-                height: this.tileSize,
-                width: this.tileSize,
+                height: this.grid.tileSize,
+                width: this.grid.tileSize,
                 color: Color.fromRGB(0, 0, 0),
             });
             graphic.color.a = 0;
@@ -118,20 +118,20 @@ export class DungeonScene extends Scene {
             ]));
         });
 
-        this.grid.createLayer('creatures', 0, tile => {
-            if (!this.random.bool(10 / (this.width * this.height))) {
-                return;
-            }
-
-            tile.solid = true;
-
-            const graphic = new Rectangle({
-                height: this.tileSize,
-                width: this.tileSize,
-                color: Color.White,
-            });
-            tile.addGraphic(graphic);
-        });
+        // this.grid.createLayer('creatures', 0, tile => {
+        //     if (!this.random.bool(10 / (this.width * this.height))) {
+        //         return;
+        //     }
+        //
+        //     tile.solid = true;
+        //
+        //     const graphic = new Rectangle({
+        //         height: this.tileSize,
+        //         width: this.tileSize,
+        //         color: Color.White,
+        //     });
+        //     tile.addGraphic(graphic);
+        // });
 
         this.player.setTilePos(this.grid.getRandomFreeTile());
     }

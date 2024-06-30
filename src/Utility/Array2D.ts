@@ -10,7 +10,7 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
 
     protected readonly arrayWidth: number;
     protected readonly arrayHeight: number;
-    protected readonly length: number;
+    public readonly length: number;
 
     constructor(
         {width, height}: Dimensions,
@@ -152,6 +152,6 @@ export class Array2D<I, C extends Coordinate = Coordinate> {
             return;
         }
 
-        throw new Error('Invalid coordinate');
+        throw new Error('Invalid coordinate: ' + JSON.stringify(coordinate));
     }
 }
