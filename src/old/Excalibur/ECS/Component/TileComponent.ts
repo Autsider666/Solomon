@@ -5,7 +5,9 @@ export class TileComponent extends BaseComponent {
     public readonly pos: Vector;
     private readonly graphic: Raster;
 
-    public visible: boolean = true;
+    private inFieldOfView: boolean = true;
+
+    private lighting: number = 0;
 
     constructor(
         public readonly tile: Tile,
@@ -25,18 +27,24 @@ export class TileComponent extends BaseComponent {
     }
 
     get alpha(): number {
-        return this.graphic.color.a;
+        return this.lighting;
     }
 
     set alpha(alpha: number) {
-        this.graphic.color.a = alpha;
+        this.lighting = alpha;
+        this.updateTile();
     }
 
-    // get visible(): boolean {
-    //     return this.tile.solid;
-    // }
-    //
-    // set visible(visible: boolean) {
-    //     this.tile.solid = visible;
-    // }
+    get visible(): boolean {
+        return this.inFieldOfView;
+    }
+
+    set visible(visible: boolean) {
+        this.inFieldOfView = visible;
+        this.updateTile();
+    }
+
+    private updateTile(): void {
+        this.graphic.color.a = this.inFieldOfView ? this.lighting : 1;
+    }
 }

@@ -1,8 +1,8 @@
 import {DefaultLoader, Graphic, Random, Scene, Vector} from "excalibur";
 import {Player} from "../Actor/Player.ts";
-import {AssetLoader} from "../Asset/AssetLoader.ts";
-import {FloorAssetLoader} from "../Asset/DawnLike/FloorAssetLoader.ts";
-import {WallAssetLoader} from "../Asset/DawnLike/WallAssetLoader.ts";
+import {AssetLoader} from "../../Roguelike/Utility/Asset/AssetLoader/AssetLoader.ts";
+import {FloorAssetLoader} from "../../Roguelike/Utility/Asset/AssetLoader/DawnLike/FloorAssetLoader.ts";
+import {WallAssetLoader} from "../../Roguelike/Utility/Asset/AssetLoader/DawnLike/WallAssetLoader.ts";
 import {FieldOfViewSystem} from "../ECS/System/FieldOfViewSystem.ts";
 import {LightingSystem} from "../ECS/System/LightingSystem.ts";
 import {MovementSystem} from "../ECS/System/MovementSystem.ts";
@@ -85,6 +85,11 @@ export class DungeonScene extends Scene {
             if (!sprite) {
                 throw new Error('Hmmm, invalid tile mask.');
             }
+
+
+
+            // sprite.tint = Color.fromHex(ColorHelper.shadeBlend(1, ColorHelper.White));
+            // sprite.tint = Color.fromHex(ColorHelper.shadeBlend(0, ColorHelper.Black));
 
             if (tile.solid) {
                 switch (mask) {
