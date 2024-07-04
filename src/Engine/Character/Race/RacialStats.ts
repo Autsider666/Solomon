@@ -14,7 +14,7 @@ export class RacialStats {
     }
 
     getMaxStat(stat: Stat): number {
-        return this.maxStats.get(stat) ?? 0;
+        return this.maxStats[stat];
     }
 
     getValueAtLevel(stat: Stat, level: number): number {

@@ -86,4 +86,8 @@ export class StringHelper {
 
         return text;
     }
+
+    static capitalize(text: string): string {
+        return `${text[0].toUpperCase()}${text.substring(1)}`;
+    }
 }

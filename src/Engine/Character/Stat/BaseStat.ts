@@ -13,6 +13,7 @@ export abstract class BaseStat extends Property<number> {
 
     bindCharacterSave(save: CharacterSave) {
         this._save = save;
+        console.log(save);
         this._value = this._save.stats.getValueAtLevel(this.stat, this._save.level);
     }
 }

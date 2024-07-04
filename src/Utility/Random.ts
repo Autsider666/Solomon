@@ -15,4 +15,13 @@ export class Random {
     public static percent(chance: number): boolean {
         return this.range(100) < chance;
     }
+
+    public static float(min: number, max?: number){
+        if (max === undefined) {
+            max = min;
+            min = 0;
+        }
+
+        return this.random.floating(min, max);
+    }
 }

@@ -1,4 +1,4 @@
-export type StatList = Map<Stat, number>;
+export type StatList = Record<Stat, number>;
 
 export enum Stat {
     Vitality = 'Vitality',
