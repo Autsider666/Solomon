@@ -1,8 +1,9 @@
 import {Dimensions} from "../../Utility/Geometry/Dimensions.ts";
 import {Coordinate} from "../../Utility/Geometry/Shape/Coordinate.ts";
-import {Stage} from "../Stage/Stage.ts";
 import {Character} from "../Character/Character.ts";
 import {CharacterSave} from "../Character/CharacterSave.ts";
+import {Stage} from "../Stage/Stage.ts";
+import {StageArchitect} from "../Stage/StageArchitect.ts";
 import {Logger} from "./Logging/Logger.ts";
 
 export class Game {
@@ -22,5 +23,11 @@ export class Game {
 
     get character(): Character {
         return this._character;
+    }
+
+    public generate(): void {
+        const architect = new StageArchitect(this._stage);
+
+        architect.buildStage();
     }
 }

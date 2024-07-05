@@ -10,11 +10,11 @@ export class CharacterSave {
 
     constructor(
         public readonly name: string,
-        race: Race,
+        public readonly race: Race,
     ) {
-        this.bindStats();
-
         this.stats = race.generateStats();
+
+        this.bindStats();
     }
 
     private bindStats(): void {

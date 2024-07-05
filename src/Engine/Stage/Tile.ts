@@ -1,7 +1,8 @@
+import {Sprite} from "excalibur";
 import {TileType} from "./TileType.ts";
 
 export class Tile {
-    private _type: TileType = TileType.uninitialized;
+    public type: TileType = TileType.uninitialized;
 
     private _isOccluded: boolean = false;
 
@@ -31,12 +32,8 @@ export class Tile {
         return this._isExplored;
     }
 
-    get type():TileType {
-        return this._type;
-    }
-
-    get isWalkable():boolean {
-        return this._type.isWalkable;
+    get isWalkable(): boolean {
+        return this.type.isWalkable;
     }
 
     public updateExplored(force: boolean = false): boolean {
@@ -51,5 +48,9 @@ export class Tile {
     public updateVisibility(isOccluded: boolean, falloff: number): void {
         this._isOccluded = isOccluded;
         this._falloff = falloff;
+    }
+
+    get sprite(): Sprite | undefined {
+        return this.type.sprite ?? undefined;
     }
 }

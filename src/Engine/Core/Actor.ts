@@ -10,7 +10,7 @@ export abstract class Actor extends Noun {
     protected constructor(
         name: string,
         public readonly game: Game,
-        public readonly position: Coordinate,
+        public position: Coordinate,
     ) {
         super(name);
     }

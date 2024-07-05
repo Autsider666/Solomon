@@ -18,7 +18,7 @@ export class RacialStats {
     }
 
     getValueAtLevel(stat: Stat, level: number): number {
-        console.log(stat, level, 'TODO'); //TODO
+        console.log(stat, level, 'Not yet implemented'); //TODO
         return 0;
     }
 }
