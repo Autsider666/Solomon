@@ -27,9 +27,11 @@ export class Logger {
     }
 
     addMessage(type: LogType, message: string): void {
+        console.log(type, message);
+
         if (this.messages) {
             const lastMessage = this.messages[message.length - 1];
-            if (lastMessage.message === message) {
+            if (lastMessage && lastMessage.message === message) {
                 lastMessage.repeat++;
                 return;
             }

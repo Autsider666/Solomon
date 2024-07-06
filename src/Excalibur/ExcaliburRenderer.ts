@@ -1,4 +1,4 @@
-import {Color, DefaultLoader, Engine} from "excalibur";
+import {Color, DefaultLoader, DisplayMode, Engine} from "excalibur";
 import {ImageSourceContent} from "../Content/Graphic/ImageSourceContent.ts";
 import {Screen, ScreenData} from "./Screen.ts";
 
@@ -10,6 +10,7 @@ export class ExcaliburRenderer {
         this.engine = new Engine<'screen'>({
             backgroundColor: Color.Black,
             scenes: {screen: new Screen()},
+            displayMode: DisplayMode.FillScreen,
         });
         this.loader = new DefaultLoader();
         ImageSourceContent.bindLoader(this.loader);

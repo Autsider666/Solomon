@@ -1,4 +1,5 @@
-import {Sprite} from "excalibur";
+import {Graphic} from "excalibur";
+import {Motility} from "./Motility.ts";
 import {TileType} from "./TileType.ts";
 
 export class Tile {
@@ -50,7 +51,11 @@ export class Tile {
         this._falloff = falloff;
     }
 
-    get sprite(): Sprite | undefined {
-        return this.type.sprite ?? undefined;
+    get graphic(): Graphic | undefined {
+        return this.type.graphic ?? undefined;
+    }
+
+    canEnter(motility: Motility): boolean {
+        return this.type.canEnter(motility);
     }
 }

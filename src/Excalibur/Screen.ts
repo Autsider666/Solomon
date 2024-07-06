@@ -1,7 +1,11 @@
-import {Color, Rectangle, Scene, SceneActivationContext} from "excalibur";
+import {Actor, Engine, Keys, Scene, SceneActivationContext} from "excalibur";
+import {GraphicContent} from "../Content/Graphic/GraphicContent.ts";
+import {MoveAction} from "../Engine/Action/MoveAction.ts";
+import {Character} from "../Engine/Character/Character.ts";
 import {CharacterSave} from "../Engine/Character/CharacterSave.ts";
 import {Game} from "../Engine/Core/Game.ts";
 import {Dimensions} from "../Utility/Geometry/Dimensions.ts";
+import {Direction} from "../Utility/Geometry/Direction.ts";
 import {Coordinate} from "../Utility/Geometry/Shape/Coordinate.ts";
 import {TileGrid} from "./TileGrid.ts";
 
@@ -11,7 +15,24 @@ export type ScreenData = {
     save: CharacterSave,
 };
 
-export class Screen extends Scene {
+type GridLevel = 'background' | 'actor';
+
+export class Screen extends Scene<ScreenData> {
+    private game!: Game;
+    private grid!: TileGrid<GridLevel>;
+    private playerActor!: Actor;
+
+    onInitialize(engine: Engine) {
+        engine.inputMapper.on(({keyboard}) => keyboard.wasPressed(Keys.W) || keyboard.wasPressed(Keys.Up) || keyboard.wasPressed(Keys.Num8),
+            () => this.game.character.setNextAction(new MoveAction(Direction.north)));
+        engine.inputMapper.on(({keyboard}) => keyboard.wasPressed(Keys.D) || keyboard.wasPressed(Keys.Right) || keyboard.wasPressed(Keys.Num6),
+            () => this.game.character.setNextAction(new MoveAction(Direction.east)));
+        engine.inputMapper.on(({keyboard}) => keyboard.wasPressed(Keys.S) || keyboard.wasPressed(Keys.Down) || keyboard.wasPressed(Keys.Num2),
+            () => this.game.character.setNextAction(new MoveAction(Direction.south)));
+        engine.inputMapper.on(({keyboard}) => keyboard.wasPressed(Keys.A) || keyboard.wasPressed(Keys.Left) || keyboard.wasPressed(Keys.Num4),
+            () => this.game.character.setNextAction(new MoveAction(Direction.west)));
+    }
+
     onActivate({data}: SceneActivationContext<ScreenData>) {
         if (!data) {
             throw new Error('Screen data missing!');
@@ -19,31 +40,58 @@ export class Screen extends Scene {
 
         const tileSize: number = 16;
 
-        const game = new Game(data.dimensions, data.save);
+        this.game = new Game(data.dimensions, data.save);
 
-        game.generate();
+        this.game.generate();
 
-        const grid = new TileGrid<'background' | 'actor'>(this, tileSize, data.dimensions);
-        grid.createLayer('background', -10, tile => {
-            const sprite = game.stage.getTileAt(Coordinate.create(tile.x, tile.y)).sprite;
+        this.grid = new TileGrid<GridLevel>(this, tileSize, data.dimensions);
+        this.grid.createLayer('background', -10);
+
+        const characterPosition = this.game.stage.findOpenTileCoordinate();
+        if (!characterPosition) {
+            throw new Error('Hmm, so not enough tries to find open tile');
+        }
+
+        this.game.character.position = characterPosition;
+        this.grid.createLayer('actor', 1);
+
+
+        this.playerActor = new Actor();
+        this.playerActor.on('preupdate', () => {
+            this.playerActor.pos.x = this.game.character.position.x * tileSize;
+            this.playerActor.pos.y = this.game.character.position.y * tileSize;
+        });
+
+        this.add(this.playerActor);
+
+        this.camera.strategy.lockToActor(this.playerActor);
+        this.camera.zoom = 2;
+
+        this.updateScreen();
+    }
+
+    onPreUpdate(): void {
+        const result = this.game.update();
+        if (result.dirty) {
+            this.updateScreen();
+        }
+    }
+
+    private updateScreen(): void {
+        this.grid.iterateLayer('background', tile => {
+            const sprite = this.game.stage.getTileAt(Coordinate.create(tile.x, tile.y)).graphic;
+            tile.clearGraphics();
             if (sprite) {
                 tile.addGraphic(sprite);
             }
         });
 
-        const characterPosition = game.stage.findOpenTileCoordinate();
-        if (!characterPosition) {
-            throw new Error('Hmm, so not enough tries to find open tile');
-        }
 
-        game.character.position = characterPosition;
-        grid.createLayer('actor', 1, tile => {
-            if (characterPosition.x === tile.x && characterPosition.y === tile.y) {
-                tile.addGraphic(new Rectangle({
-                    width: tileSize,
-                    height: tileSize,
-                    color: Color.Red,
-                }));
+        this.grid.iterateLayer('actor', tile => {
+            const actor = this.game.stage.getActorAt(Coordinate.create(tile.x, tile.y));
+            tile.clearGraphics();
+            if (actor instanceof Character) {
+                tile.addGraphic(GraphicContent.get(actor.race));
             }
         });
     }

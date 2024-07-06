@@ -29,8 +29,8 @@ export class Random {
 
     public static coordinateInRectangle(rectangle: Rectangle): Coordinate {
         return new Coordinate(
-            this.range(rectangle.x, rectangle.x + rectangle.width),
-            this.range(rectangle.y, rectangle.y + rectangle.height),
+            this.range(rectangle.x, rectangle.x + rectangle.width - 1),
+            this.range(rectangle.y, rectangle.y + rectangle.height - 1),
         );
     }
 }

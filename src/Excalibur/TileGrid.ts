@@ -11,7 +11,7 @@ export class TileGrid<Identifier extends string = string> {
     constructor(
         private readonly tileMapHandler: { add(tileMap: TileMap): void; },
         public readonly tileSize: number,
-        public readonly dimensions:Dimensions,
+        public readonly dimensions: Dimensions,
     ) {
     }
 

@@ -1,8 +1,8 @@
 import {Character} from "../Character/Character.ts";
+import {Action} from "./Action.ts";
 import {ActionResult} from "./ActionResult.ts";
-import {ActorAction} from "./ActorAction.ts";
 
-export class RestAction extends ActorAction {
+export class RestAction extends Action {
     onPerform(): ActionResult {
         if (this.actor instanceof Character) {
             this.actor.health++;
@@ -12,5 +12,4 @@ export class RestAction extends ActorAction {
 
         return this.succeed();
     }
-
 }

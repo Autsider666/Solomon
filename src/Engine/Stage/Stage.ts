@@ -9,11 +9,12 @@ import {Monster} from "../Monster/Monster.ts";
 import {Tile} from "./Tile.ts";
 
 export class Stage {
-    private readonly _actors: Set<Actor> = new Set<Actor>();
+    private readonly _actors: Actor[] = [];
+    private _currentActorIndex: number = 0;
     private readonly tiles: Array2D<Tile>;
     private readonly _actorsByTile: Array2D<Actor | undefined>;
 
-    get actors(): ReadonlySet<Actor> {
+    get actors(): ReadonlyArray<Actor> {
         return this._actors;
     }
 
@@ -65,5 +66,56 @@ export class Stage {
         }
 
         return undefined;
+    }
+
+    get currentActor(): Actor {
+        const actor = this._actors[this._currentActorIndex];
+        if (!actor) {
+            throw new Error('No currentActor');
+        }
+
+        return actor;
+    }
+
+    public advanceActor(): void {
+        this._currentActorIndex = (this._currentActorIndex + 1) % this._actors.length;
+    }
+
+    public addActor(actor: Actor): void {
+        if (this._actorsByTile.get(actor.position)) {
+            throw new Error('Actor already exists in stage.');
+        }
+
+        this._actors.push(actor);
+        this._actorsByTile.set(actor.position, actor);
+    }
+
+    public removeActor(actor: Actor): void {
+        if (this._actorsByTile.get(actor.position) !== actor) {
+            throw new Error('Actor position does not match their tile.');
+        }
+
+        const index = this._actors.indexOf(actor);
+        if (this._currentActorIndex > index) {
+            this._currentActorIndex--;
+        }
+
+        this._actors.splice(index, 1);
+
+        this._actorsByTile.set(actor.position, undefined);
+    }
+
+    moveActor(from: Coordinate, to: Coordinate) {
+        const actor = this._actorsByTile.get(from);
+        this._actorsByTile.set(from, undefined);
+        if (actor) {
+            actor.position = to;
+        }
+
+        const target = this._actorsByTile.get(to);
+        this._actorsByTile.set(to, actor);
+        if (target) {
+            target.position = from; //FIXME Can actors move actors?
+        }
     }
 }

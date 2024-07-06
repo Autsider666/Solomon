@@ -32,6 +32,6 @@ export class Rectangle extends Shape {
     }
 
     atEdge({x, y}: Coordinate): boolean {
-        return x === 0 || x === this.width -1 || y === 0 || y === this.height-1;
+        return x === 0 || x === this.width - 1 || y === 0 || y === this.height - 1;
     }
 }

@@ -1,9 +1,8 @@
+import {Direction} from "../Direction.ts";
 import {Shape} from "./Shape.ts";
 
 export class Coordinate extends Shape {
-    static zero = new Coordinate(0, 0);
-
-    private static readonly reusableCoordinate:Coordinate = this.zero;
+    private static readonly reusableCoordinate: Coordinate = new Coordinate(0, 0);
 
     constructor(
         public x: number,
@@ -12,14 +11,21 @@ export class Coordinate extends Shape {
         super();
     }
 
-    public static create(x:number, y:number, newInstance:boolean = false):Coordinate {
+    public static create(x: number, y: number, newInstance: boolean = false): Coordinate {
         if (newInstance) {
-            return new Coordinate(x,y);
+            return new Coordinate(x, y);
         }
 
         this.reusableCoordinate.x = x;
         this.reusableCoordinate.y = y;
 
         return this.reusableCoordinate;
+    }
+
+    inDirection(direction: Direction): Coordinate {
+        return new Coordinate(
+            this.x + direction.dX,
+            this.y + direction.dY,
+        );
     }
 }

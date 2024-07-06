@@ -1,10 +1,10 @@
-import {Sprite} from "excalibur";
+import {Graphic} from "excalibur";
 import {ResourceSet} from "../../Engine/Core/Resource/ResourceSet.ts";
 
-export class SpriteContent {
-    private static content: ResourceSet<Sprite> = new ResourceSet();
+export class GraphicContent {
+    private static content: ResourceSet<Graphic> = new ResourceSet();
 
-    static add(name: string, content: Sprite, tags?: string[]): void {
+    static add(name: string, content: Graphic, tags?: string[]): void {
         this.content.add(content, name, 0, 0, 0, 0, tags && tags.length ? tags.join(" ") : undefined);
     }
 
@@ -12,7 +12,7 @@ export class SpriteContent {
         return this.content.tryGet(name) !== undefined;
     }
 
-    static get(name: string): Sprite {
+    static get(name: string): Graphic {
         return this.content.get(name);
     }
 }
