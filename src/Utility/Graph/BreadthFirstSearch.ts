@@ -3,45 +3,49 @@ import {Graph} from "./Graph.ts";
 import {GraphNode} from "./GraphNode.ts";
 
 export class BreadthFirstSearch {
-    static search<Identifier, Data>(
-        graph: Graph<Identifier, Data>,
-        start: GraphNode<Identifier, Data> | Identifier,
-        callback: (path: ReadonlyArray<GraphNode<Identifier, Data>>, distance: number) => void,
+    static search<Identifier, NodeData, EdgeData>(
+        graph: Graph<Identifier, NodeData, EdgeData>,
+        start: GraphNode<Identifier, NodeData, EdgeData> | Identifier,
+        callback: (path: ReadonlyArray<GraphNode<Identifier, NodeData, EdgeData>>, distance: number) => void,
     ): void {
-        const startNode: GraphNode<Identifier, Data> | undefined = start instanceof GraphNode ? start : graph.getNode(start);
+        const startNode: GraphNode<Identifier, NodeData, EdgeData> | undefined = start instanceof GraphNode ? start : graph.getNode(start);
 
         if (!startNode) {
             throw new Error('The given start node is not part of t his graph');
         }
 
-        const queue = new Queue<GraphNode<Identifier, Data>[]>();
-        const visitedNodes = new Set<GraphNode<Identifier, Data>>();
+        const queue = new Queue<GraphNode<Identifier, NodeData, EdgeData>[]>();
+        const visitedNodes = new Set<GraphNode<Identifier, NodeData, EdgeData>>();
         let distance: number = 0;
 
-        queue.enqueue([startNode]);
+        const path: GraphNode<Identifier, NodeData, EdgeData>[] = [startNode];
+
+        queue.enqueue([...path]);
+        callback([...path], distance);
         visitedNodes.add(startNode);
 
         while (!queue.isEmpty()) {
             const level = queue.dequeue() ?? [];
-            const adjacentNodes: GraphNode<Identifier, Data>[] = [];
+            path.length = 0;
+            // const adjacentNodes: GraphNode<Identifier, NodeData, EdgeData>[] = [];
             for (const levelNode of level) {
                 for (const node of levelNode.getReachableNodes()) {
                     if (visitedNodes.has(node)) {
                         continue;
                     }
 
-                    adjacentNodes.push(node);
+                    path.push(node);
                     visitedNodes.add(node);
                 }
 
-                queue.enqueue(adjacentNodes); //TODO [...adjacentNodes] needed?
+                queue.enqueue([...path]); //TODO [...adjacentNodes] needed?
             }
 
-            if (adjacentNodes.length === 0) {
+            if (path.length === 0) {
                 continue;
             }
 
-            callback(adjacentNodes, ++distance);
+            callback([...path], ++distance);
         }
     }
 }

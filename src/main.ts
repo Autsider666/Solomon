@@ -1,8 +1,6 @@
 import './style.css';
 import {BreedBuilder} from "./Content/Monter/BreedBuilder.ts";
 import {RaceBuilder} from "./Content/Race/RaceBuilder.ts";
-import {RaceContent} from "./Content/Race/RaceContent.ts";
-import {CharacterSave} from "./Engine/Character/CharacterSave.ts";
 import {ExcaliburRenderer} from "./Excalibur/ExcaliburRenderer.ts";
 import {SpriteSheetLoader} from "./Excalibur/SpriteSheetLoader.ts";
 import {Coordinate} from "./Utility/Geometry/Shape/Coordinate.ts";
@@ -64,13 +62,15 @@ RaceBuilder.finish();
 
 await renderer.start();
 
-const save = new CharacterSave('test', RaceContent.get('human'));
+// const save = new CharacterSave('test', RaceContent.get('human'));
+//
+// await renderer.loadLevel({
+//     save,
+//     dimensions: {
+//         width: 10,
+//         height: 10
+//     },
+//     depth: 0,
+// });
 
-await renderer.loadLevel({
-    save,
-    dimensions: {
-        width: 10,
-        height: 10
-    },
-    depth: 0,
-});
+await renderer.generateDungeon();

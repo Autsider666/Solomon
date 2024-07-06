@@ -10,28 +10,28 @@ type RouteFindQuery<Identifier> = {
     }
 }
 
-export class Graph<Identifier, Data> {
-    private readonly nodes: Map<Identifier, GraphNode<Identifier, Data>> = new Map<Identifier, GraphNode<Identifier, Data>>();
-    private readonly edges: GraphEdge<Identifier, Data>[] = [];
+export class Graph<Identifier, NodeData, EdgeData> {
+    private readonly nodes: Map<Identifier, GraphNode<Identifier, NodeData, EdgeData>> = new Map<Identifier, GraphNode<Identifier, NodeData, EdgeData>>();
+    private readonly edges: GraphEdge<Identifier, EdgeData, NodeData>[] = [];
 
     // NODE
-    public getNode(id: Identifier): GraphNode<Identifier, Data> | undefined {
+    public getNode(id: Identifier): GraphNode<Identifier, NodeData, EdgeData> | undefined {
         return this.nodes.get(id);
     }
 
-    public addNode(id: Identifier, data?: Data): GraphNode<Identifier, Data> {
-        let node: GraphNode<Identifier, Data> | undefined = this.nodes.get(id);
+    public addNode(id: Identifier, data: NodeData): GraphNode<Identifier, NodeData, EdgeData> {
+        let node: GraphNode<Identifier, NodeData, EdgeData> | undefined = this.nodes.get(id);
         if (node) {
             return node;
         }
 
-        node = new GraphNode<Identifier, Data>(id, data);
+        node = new GraphNode<Identifier, NodeData, EdgeData>(id, data);
 
         this.nodes.set(id, node);
         return node;
     }
 
-    public hasNode(node: Identifier | GraphNode<Identifier, Data>): boolean {
+    public hasNode(node: Identifier | GraphNode<Identifier, NodeData, EdgeData>): boolean {
         if (node instanceof GraphNode) {
             node = node.id;
         }
@@ -39,9 +39,9 @@ export class Graph<Identifier, Data> {
         return this.nodes.has(node);
     }
 
-    public removeNode(idOrNode: Identifier | GraphNode<Identifier, Data>): boolean {
+    public removeNode(idOrNode: Identifier | GraphNode<Identifier, NodeData, EdgeData>): boolean {
         let id: Identifier;
-        let node: GraphNode<Identifier, Data> | undefined;
+        let node: GraphNode<Identifier, NodeData, EdgeData> | undefined;
         if (idOrNode instanceof GraphNode) {
             node = idOrNode;
             id = idOrNode.id;
@@ -64,7 +64,7 @@ export class Graph<Identifier, Data> {
     }
 
     // EDGE
-    public getEdge(source: Identifier, target: Identifier, directional?: boolean): GraphEdge<Identifier, Data> | undefined {
+    public getEdge(source: Identifier, target: Identifier, directional?: boolean): GraphEdge<Identifier, EdgeData, NodeData> | undefined {
         for (const edge of this.edges) {
             if (edge.source.id === source && edge.target.id === target && (directional === undefined || edge.directional === directional)) {
                 return edge;
@@ -74,7 +74,7 @@ export class Graph<Identifier, Data> {
         return undefined;
     }
 
-    public addEdge(source: Identifier, target: Identifier, options?: GraphEdgeOptions): GraphEdge<Identifier, Data> | undefined {
+    public addEdge(source: Identifier, target: Identifier, data: EdgeData, options?: GraphEdgeOptions): GraphEdge<Identifier, EdgeData, NodeData> | undefined {
         const sourceNode = this.getNode(source);
         const targetNode = this.getNode(target);
 
@@ -82,7 +82,7 @@ export class Graph<Identifier, Data> {
             return undefined;
         }
 
-        const edge = new GraphEdge<Identifier, Data>(sourceNode, targetNode, options);
+        const edge = new GraphEdge<Identifier, EdgeData, NodeData>(sourceNode, targetNode, data, options);
         if (this.hasEdge(edge)) {
             return undefined;
         }
@@ -95,7 +95,7 @@ export class Graph<Identifier, Data> {
         return edge;
     }
 
-    public hasEdge(sourceOrEdge: Identifier | GraphEdge<Identifier, Data>, target?: Identifier): boolean {
+    public hasEdge(sourceOrEdge: Identifier | GraphEdge<Identifier, EdgeData, NodeData>, target?: Identifier): boolean {
         if (sourceOrEdge instanceof GraphEdge) {
             return this.edges.includes(sourceOrEdge);
         }
@@ -107,7 +107,7 @@ export class Graph<Identifier, Data> {
         return !!this.getEdge(sourceOrEdge, target);
     }
 
-    public removeEdge(sourceOrEdge: Identifier | GraphEdge<Identifier, Data>, target?: Identifier): boolean {
+    public removeEdge(sourceOrEdge: Identifier | GraphEdge<Identifier, EdgeData, NodeData>, target?: Identifier): boolean {
         if (sourceOrEdge instanceof GraphEdge) {
             sourceOrEdge.delete();
             this.edges.splice(this.edges.indexOf(sourceOrEdge), 1);
@@ -130,24 +130,24 @@ export class Graph<Identifier, Data> {
     //ROUTE
     private visitStacked(
         from: Identifier,
-        callback: (node: GraphNode<Identifier, Data>, stack: ReadonlyArray<GraphNode<Identifier, Data>>, weight: number) => void,
+        callback: (node: GraphNode<Identifier, NodeData, EdgeData>, stack: ReadonlyArray<GraphNode<Identifier, NodeData, EdgeData>>, weight: number) => void,
     ): void {
         const fromNode = this.getNode(from);
         if (!fromNode) {
             throw new Error('Provided node isn\'t part of this graph.');
         }
 
-        const stack: GraphNode<Identifier, Data>[] = [fromNode];
+        const stack: GraphNode<Identifier, NodeData, EdgeData>[] = [fromNode];
         let weight: number = 0;
 
-        const iterator = (node: GraphNode<Identifier, Data>): void => {
+        const iterator = (sourceNode: GraphNode<Identifier, NodeData, EdgeData>): void => {
             for (const edge of this.edges) {
-                if (edge.target.id === node.id) {
+                if (edge.target.id === sourceNode.id) {
                     continue;
                 }
 
                 const targetNode = edge.target;
-                if (stack.includes(targetNode)) {
+                if (stack.filter(stackedNode => stackedNode.id === targetNode.id).length > 0) {
                     continue;
                 }
 
@@ -165,8 +165,8 @@ export class Graph<Identifier, Data> {
         iterator(fromNode);
     }
 
-    public getRoutes({from, to, where}: RouteFindQuery<Identifier>): GraphRoute<Identifier, Data>[] {
-        const routes: GraphRoute<Identifier, Data>[] = [];
+    public getRoutes({from, to, where}: RouteFindQuery<Identifier>): GraphRoute<Identifier, NodeData, EdgeData>[] {
+        const routes: GraphRoute<Identifier, NodeData, EdgeData>[] = [];
 
         if (!this.hasNode(from) || to && !this.hasNode(to)) {
             return routes;
@@ -194,13 +194,13 @@ export class Graph<Identifier, Data> {
             //     return;
             // }
 
-            routes.push(new GraphRoute<Identifier, Data>(stack.slice(), weight));
+            routes.push(new GraphRoute<Identifier, NodeData, EdgeData>(stack.slice(), weight));
         });
 
         return routes;
     }
 
-    public findRoute(where: Identifier[]): GraphRoute<Identifier, Data> | undefined {
+    public findRoute(where: Identifier[]): GraphRoute<Identifier, NodeData, EdgeData> | undefined {
         if (where.length === 0) {
             return undefined;
         }
@@ -221,15 +221,15 @@ export class Graph<Identifier, Data> {
         return undefined;
     }
 
-    public hasRoute(route: GraphRoute<Identifier, Data>): boolean {
+    public hasRoute(route: GraphRoute<Identifier, NodeData, EdgeData>): boolean {
         const hasStart = this.hasNode(route.start);
         if (!hasStart) {
             return false;
         }
 
-        const iterator = (source: GraphNode<Identifier, Data>, routeIndex: number): boolean => {
+        const iterator = (source: GraphNode<Identifier, NodeData, EdgeData>, routeIndex: number): boolean => {
             let found: boolean = false;
-            let nextNode: GraphNode<Identifier, Data> | undefined = undefined;
+            let nextNode: GraphNode<Identifier, NodeData, EdgeData> | undefined = undefined;
 
             for (const node of source.getReachableNodes()) {
                 if (!node.equals(route.path[routeIndex])) {

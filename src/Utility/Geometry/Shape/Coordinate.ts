@@ -28,4 +28,8 @@ export class Coordinate extends Shape {
             this.y + direction.dY,
         );
     }
+
+    toString(): string {
+        return `x:${this.x}, y:${this.y}`;
+    }
 }

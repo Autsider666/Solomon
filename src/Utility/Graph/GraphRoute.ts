@@ -1,26 +1,20 @@
 import {GraphNode} from "./GraphNode.ts";
 
-export class GraphRoute<Identifier, Data> {
+export class GraphRoute<Identifier, NodeData, EdgeData> {
     constructor(
-        public readonly path: ReadonlyArray<GraphNode<Identifier, Data>>,
+        public readonly path: ReadonlyArray<GraphNode<Identifier, NodeData, EdgeData>>,
         public readonly weight: number,
     ) {
         if (path.length === 0) {
             throw new Error('Path is expected to contain at least one Node.');
         }
-
-        // if (this.start.equals(this.end)) {
-        //     return;
-        // }
-        //
-        // //TODO handle route validation?
     }
 
-    public get start(): GraphNode<Identifier, Data> {
+    public get start(): GraphNode<Identifier, NodeData, EdgeData> {
         return this.path[0];
     }
 
-    public get end(): GraphNode<Identifier, Data> {
+    public get end(): GraphNode<Identifier, NodeData, EdgeData> {
         return this.path[this.path.length - 1];
     }
 
