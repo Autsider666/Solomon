@@ -20,6 +20,7 @@
     "eslint": "^8.57.0",
     "excalibur": "^0.30.0-alpha.1077",
     "fraction.js": "^4.3.7",
+    "graphology": "^0.25.4",
     "typescript-eslint": "^7.14.1"
   }
 }

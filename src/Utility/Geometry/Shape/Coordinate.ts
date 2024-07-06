@@ -30,6 +30,6 @@ export class Coordinate extends Shape {
     }
 
     toString(): string {
-        return `x:${this.x}, y:${this.y}`;
+        return `{ x:${this.x}, y:${this.y} }`;
     }
 }

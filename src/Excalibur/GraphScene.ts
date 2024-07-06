@@ -1,9 +1,9 @@
 import {Actor, Circle, Color, Raster, Rectangle, Scene, Vector} from "excalibur";
+import Graph from "graphology";
 import {Array2D} from "../Utility/Array2D.ts";
 import {Dimensions} from "../Utility/Geometry/Dimensions.ts";
 import {Direction} from "../Utility/Geometry/Direction.ts";
 import {Coordinate} from "../Utility/Geometry/Shape/Coordinate.ts";
-import {Graph} from "../Utility/Graph/Graph.ts";
 import {Random} from "../Utility/Random.ts";
 
 type NodeTag = 'start' | `goal` | 'active';
@@ -29,7 +29,7 @@ export class GraphScene extends Scene {
     };
     private readonly graphicsMap: Map<unknown, Raster> = new Map<unknown, Raster>();
     private readonly graphKeys: Array2D<Vector>;
-    private readonly graph: Graph<Vector, NodeData, EdgeData> = new Graph<Vector, NodeData, EdgeData>();
+    private readonly graph: Graph<NodeData, EdgeData> = new Graph<NodeData, EdgeData>();
 
     constructor() {
         super();
@@ -48,21 +48,47 @@ export class GraphScene extends Scene {
             },
         );
 
-        this.graphKeys.iterateAll((key, coordinate) => {
-            if (coordinate.x > 0) {
-                this.graph.addEdge(key, this.graphKeys.get(coordinate.inDirection(Direction.west)), {active: false});
+        this.graphKeys.iterateAll((key, sourceCoordinate) => {
+            const origin = sourceCoordinate.toString() + ' -> ';
+
+            if (sourceCoordinate.x > 0) {
+                const targetCoordinate = sourceCoordinate.inDirection(Direction.west);
+                this.graph.addEdgeWithKey(
+                    origin + targetCoordinate.toString(),
+                    key,
+                    this.graphKeys.get(targetCoordinate),
+                    {active: false},
+                );
             }
 
-            if (coordinate.x < this.graphDimensions.width - 1) {
-                this.graph.addEdge(key, this.graphKeys.get(coordinate.inDirection(Direction.east)), {active: false});
+            if (sourceCoordinate.x < this.graphDimensions.width - 1) {
+                const targetCoordinate = sourceCoordinate.inDirection(Direction.east);
+                this.graph.addEdgeWithKey(
+                    origin + targetCoordinate.toString(),
+                    key,
+                    this.graphKeys.get(targetCoordinate),
+                    {active: false},
+                );
             }
 
-            if (coordinate.y > 0) {
-                this.graph.addEdge(key, this.graphKeys.get(coordinate.inDirection(Direction.north)), {active: false});
+            if (sourceCoordinate.y > 0) {
+                const targetCoordinate = sourceCoordinate.inDirection(Direction.north);
+                this.graph.addEdgeWithKey(
+                    origin + targetCoordinate.toString(),
+                    key,
+                    this.graphKeys.get(targetCoordinate),
+                    {active: false},
+                );
             }
 
-            if (coordinate.y < this.graphDimensions.height - 1) {
-                this.graph.addEdge(key, this.graphKeys.get(coordinate.inDirection(Direction.south)), {active: false});
+            if (sourceCoordinate.y < this.graphDimensions.height - 1) {
+                const targetCoordinate = sourceCoordinate.inDirection(Direction.south);
+                this.graph.addEdgeWithKey(
+                    origin + targetCoordinate.toString(),
+                    key,
+                    this.graphKeys.get(targetCoordinate),
+                    {active: false},
+                );
             }
         });
 
@@ -71,9 +97,9 @@ export class GraphScene extends Scene {
         while (startTries > 0) {
             startTries--;
             const node = this.getRandomNode();
-            if (node && node.data.tags.length === 0) {
-                node.data.tags.push('start');
-                start = node.id;
+            if (node && node.tags.length === 0) {
+                node.tags.push('start');
+                start = node.position;
                 break;
             }
         }
@@ -83,9 +109,9 @@ export class GraphScene extends Scene {
         while (goalTries > 0) {
             goalTries--;
             const node = this.getRandomNode();
-            if (node && node.data.tags.length === 0) {
-                node.data.tags.push('goal');
-                goal = node.id;
+            if (node && node.tags.length === 0) {
+                node.tags.push('goal');
+                goal = node.position;
                 break;
             }
         }
@@ -147,12 +173,12 @@ export class GraphScene extends Scene {
         const handled = new Set<unknown>();
 
         this.graphKeys.iterateAll((key) => {
-            const node = this.graph.getNode(key);
-            if (!node) {
+            const nodeData = this.graph.getNodeAttributes(key);
+            if (!nodeData) {
                 throw new Error('No node available for this key.');
             }
 
-            let nodeGraphic: Raster | undefined = this.graphicsMap.get(node);
+            let nodeGraphic: Raster | undefined = this.graphicsMap.get(nodeData);
             if (!nodeGraphic) {
                 const actor = new Actor({
                     pos: key,
@@ -171,23 +197,26 @@ export class GraphScene extends Scene {
             }
 
             let color: Color = Color.DarkGray;
-            if (node.data.tags.includes('start')) {
+            if (nodeData.tags.includes('start')) {
                 color = Color.Green;
-            } else if (node.data.tags.includes('goal')) {
+            } else if (nodeData.tags.includes('goal')) {
                 color = Color.Red;
             }
-            if (node.data.tags.includes('active')) {
+            if (nodeData.tags.includes('active')) {
                 color = Color.White;
             }
 
             nodeGraphic.color = color;
 
-            for (const edge of node.getEdges() ?? []) {
+            this.graph.forEachEdge(nodeData.position, (edge, edgeData, source, target) => {
                 if (handled.has(edge)) {
-                    continue;
+                    return;
                 }
 
-                const horizontal = edge.source.data.position.x !== edge.target.data.position.x;
+                const sourceData = this.graph.getNodeAttributes(source);
+                const targetData = this.graph.getNodeAttributes(target);
+
+                const horizontal = sourceData.position.x !== targetData.position.x;
 
                 let edgeGraphic: Raster | undefined = this.graphicsMap.get(edge);
                 if (!edgeGraphic) {
@@ -210,15 +239,15 @@ export class GraphScene extends Scene {
                     this.add(actor);
                 }
 
-                edgeGraphic.color = edge.data.active ? Color.White : Color.DarkGray;
+                edgeGraphic.color = edgeData.active ? Color.White : Color.DarkGray;
 
                 handled.add(edge);
-            }
+            });
         });
     }
 
     private getNode(coordinate: Coordinate) {
-        return this.graph.getNode(this.graphKeys.get(coordinate));
+        return this.graph.getNodeAttributes(this.graphKeys.get(coordinate));
     }
 
     private getRandomNode() {

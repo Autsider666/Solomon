@@ -39,4 +39,8 @@ export class Direction {
         public readonly dY: number,
     ) {
     }
+
+    toString():string {
+        return `dX:${this.dX}, dY:${this.dY}`;
+    }
 }
