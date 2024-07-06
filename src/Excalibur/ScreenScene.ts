@@ -17,7 +17,7 @@ export type ScreenData = {
 
 type GridLevel = 'background' | 'actor';
 
-export class Screen extends Scene<ScreenData> {
+export class ScreenScene extends Scene<ScreenData> {
     private game!: Game;
     private grid!: TileGrid<GridLevel>;
     private playerActor!: Actor;
